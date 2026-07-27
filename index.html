@@ -160,6 +160,18 @@
       letter-spacing: -0.03em;
     }
 
+    /* Heading and the confidence chip share a line on the read screen. The
+       chip is hidden until there is a read to be confident about. */
+    .heading-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .heading-row h1 { margin: 0; }
+
     .intro-step { display: none; }
     .intro-step.active { display: block; }
 
@@ -718,7 +730,10 @@
     <div class="layout" id="layoutGrid">
       <aside class="panel" id="lhsPanel" aria-labelledby="introHeading">
         <div class="panel-main">
-          <h1 id="introHeading">Deal Diagnosis</h1>
+          <div class="heading-row">
+            <h1 id="introHeading">Deal Analysis</h1>
+            <div class="confidence hidden" id="confidenceChip">Initial read</div>
+          </div>
 
           <div class="intro-step active" id="introStep1">
             <p>Get an objective analysis of this deal.</p>
@@ -738,14 +753,12 @@
             <p><strong>How to answer:</strong></p>
             <p>Please tell us what you saw and heard. If you are sharing your judgements or assumptions, please say so.</p>
             <p>If a question opens a follow-up box, what you write there does more for the analysis than anything else on this page.</p>
+            <p>If a question opens a follow-up box, what you write there does more for the analysis than anything else on this page.</p>
           </div>
 
           <div class="intro-step" id="introStep3">
-            <div class="confidence" id="confidenceChip">Initial read</div>
-            <p style="margin-top:14px;"><strong>Based on what you've shared, here is the analysis.</strong></p>
-
-            <div class="result-section" style="margin-top:6px;">
-              <h3>What's likely happening now</h3>
+            <div class="result-section" style="margin-top:2px;">
+              <h3>Based on what you've shared, what's likely happening now</h3>
               <p id="whatsHappeningOutput"></p>
             </div>
 
@@ -760,7 +773,7 @@
             </div>
 
             <div class="result-section">
-              <h3>How to read what happens</h3>
+              <h3>What their answer will tell you</h3>
               <ul id="readingResponseOutput"></ul>
             </div>
 
@@ -804,13 +817,13 @@
                 <div class="field-row-2">
                   <div class="field">
                     <label for="dealValue">What is the rough deal value?</label>
-                    <input class="input" id="dealValue" name="dealValue" placeholder="Example: 25 or 4.5" required />
-                    <div class="tile-group" role="radiogroup" aria-label="Deal value unit" style="margin-top:10px;">
-                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Lakh" required><span>&#8377; Lakh</span></label>
-                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Crore" required><span>&#8377; Crore</span></label>
-                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Other" required><span>Other</span></label>
+                    <input class="input" id="dealValue" name="dealValue" placeholder="Example: 4.5 crore or 2 million" required />
+                    <div class="tile-group" role="radiogroup" aria-label="Currency" style="margin-top:10px;">
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueCurrency" value="₹" required><span>₹ Rupees</span></label>
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueCurrency" value="$" required><span>$ Dollars</span></label>
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueCurrency" value="Other" required><span>Other</span></label>
                     </div>
-                    <div class="hint">Approximate is enough. Pick "Other" for a different currency and write it in the box.</div>
+                    <div class="hint">Approximate is enough. Write the amount in words &mdash; "4.5 crore", "2 million". Pick "Other" for a different currency and write it in the box.</div>
                   </div>
                   <div class="field">
                     <label id="dealStageLabel">Where does the deal stand right now?</label>
@@ -844,9 +857,9 @@
                 <div class="field">
                   <label id="lastBuyerActionLabel">When did they last do something of their own, without being chased?</label>
                   <div class="tile-group" role="radiogroup" aria-labelledby="lastBuyerActionLabel">
-                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Within a week" required><span>Within a week</span></label>
-                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Within a month" required><span>Within a month</span></label>
-                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Longer than that" required><span>Longer than that</span></label>
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="In the last 2 weeks" required><span>In the last 2 weeks</span></label>
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="2 to 4 weeks ago" required><span>2 to 4 weeks ago</span></label>
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Longer than 4 weeks" required><span>Longer than 4 weeks</span></label>
                   </div>
                   <div class="hint">Sent something, brought someone in, took it internally, asked a real question. Not a reply to your chase.</div>
                 </div>
@@ -1039,6 +1052,7 @@
       introStep1.classList.toggle('active', isStep1);
       introStep2.classList.toggle('active', !isStep1);
       introStep3.classList.remove('active');
+      confidenceChip.classList.add('hidden');
       progressFill.style.width = isStep1 ? '50%' : '100%';
       progressTitle.textContent = isStep1 ? 'Step 1 of 2' : 'Step 2 of 2';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1053,6 +1067,7 @@
       introStep1.classList.remove('active');
       introStep2.classList.remove('active');
       introStep3.classList.add('active');
+      confidenceChip.classList.remove('hidden');
       actionsPanel.classList.remove('hidden');
       document.getElementById('lhsPanel').classList.remove('hidden');
       layoutGrid.classList.remove('processing-only');
@@ -1132,16 +1147,17 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Number and unit are captured separately so a raw "4500000000" can no
-    // longer arrive with no way to tell crore from anything else. They are
-    // recombined into the single dealValue string the server already expects,
-    // so nothing downstream has to change.
+    // Amount and currency are captured separately so the read can never have
+    // to guess which currency it is looking at. They are recombined into the
+    // single dealValue string the server already expects, so nothing
+    // downstream changes. "Other" passes the box through untouched, since the
+    // rep writes the currency there themselves.
     function composeDealValue() {
       const raw = (document.getElementById('dealValue').value || '').trim();
-      const unit = new FormData(dealForm).get('dealValueUnit') || '';
+      const currency = new FormData(dealForm).get('dealValueCurrency') || '';
       if (!raw) return '';
-      if (!unit || unit === 'Other') return raw;
-      return `${raw} ${unit}`;
+      if (!currency || currency === 'Other') return raw;
+      return `${currency} ${raw}`;
     }
 
     function buildPayload(calibrationText = '') {
@@ -1387,7 +1403,7 @@
         "Right now, this is what's still unclear:",
         gaps,
         '',
-        "What's likely happening now",
+        "Based on what you've shared, what's likely happening now",
         r.whatsHappening || '',
         '',
         'Which way this could go',
@@ -1396,7 +1412,7 @@
         'Do this first',
         plan.firstMove || '',
         '',
-        'How to read what happens',
+        'What their answer will tell you',
         reading,
         '',
         'Then',
@@ -1461,7 +1477,7 @@
           ${gapsHtml}
         </div>
         <div class="print-section">
-          <h3>What's likely happening now</h3>
+          <h3>Based on what you've shared, what's likely happening now</h3>
           <p>${escapeHtml(r.whatsHappening || '')}</p>
         </div>
         <div class="print-section">
@@ -1473,7 +1489,7 @@
           <p>${escapeHtml(plan.firstMove || '')}</p>
         </div>
         <div class="print-section">
-          <h3>How to read what happens</h3>
+          <h3>What their answer will tell you</h3>
           ${readingHtml}
         </div>
         <div class="print-section">
