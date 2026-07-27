@@ -735,9 +735,8 @@
           <div class="intro-step" id="introStep2">
             <p>Thanks for sharing that context. Looks interesting.</p>
             <p>Please answer a few more questions. The more information you share, the better the analysis.</p>
-            <p><strong>Caution:</strong></p>
-            <p>Please only provide facts and information for which you have evidence.</p>
-            <p>Please don't share your judgements, inferences, and assumptions.</p>
+            <p><strong>How to answer:</strong></p>
+            <p>Please tell us what you saw and heard. If you are sharing your judgements or assumptions, please say so.</p>
             <p>If a question opens a follow-up box, what you write there does more for the analysis than anything else on this page.</p>
           </div>
 
@@ -805,8 +804,13 @@
                 <div class="field-row-2">
                   <div class="field">
                     <label for="dealValue">What is the rough deal value?</label>
-                    <input class="input" id="dealValue" name="dealValue" placeholder="Example: 25L or 2 Cr" required />
-                    <div class="hint">Approximate is enough.</div>
+                    <input class="input" id="dealValue" name="dealValue" placeholder="Example: 25 or 4.5" required />
+                    <div class="tile-group" role="radiogroup" aria-label="Deal value unit" style="margin-top:10px;">
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Lakh" required><span>&#8377; Lakh</span></label>
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Crore" required><span>&#8377; Crore</span></label>
+                      <label class="tile"><input class="tile-input" type="radio" name="dealValueUnit" value="Other" required><span>Other</span></label>
+                    </div>
+                    <div class="hint">Approximate is enough. Pick "Other" for a different currency and write it in the box.</div>
                   </div>
                   <div class="field">
                     <label id="dealStageLabel">Where does the deal stand right now?</label>
@@ -837,6 +841,16 @@
                   </div>
                 </div>
 
+                <div class="field">
+                  <label id="lastBuyerActionLabel">When did they last do something of their own, without being chased?</label>
+                  <div class="tile-group" role="radiogroup" aria-labelledby="lastBuyerActionLabel">
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Within a week" required><span>Within a week</span></label>
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Within a month" required><span>Within a month</span></label>
+                    <label class="tile"><input class="tile-input" type="radio" name="lastBuyerAction" value="Longer than that" required><span>Longer than that</span></label>
+                  </div>
+                  <div class="hint">Sent something, brought someone in, took it internally, asked a real question. Not a reply to your chase.</div>
+                </div>
+
                 <div class="field-row-2">
                   <div class="field">
                     <label for="primaryContactName">Who is the main buyer-side contact?</label>
@@ -850,7 +864,7 @@
               </div>
 
               <div class="actions">
-                <div class="ghost-note">About a minute.</div>
+                <div></div>
                 <button type="button" class="button" id="toStep2">Continue to step 2</button>
               </div>
             </div>
@@ -1118,15 +1132,28 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // Number and unit are captured separately so a raw "4500000000" can no
+    // longer arrive with no way to tell crore from anything else. They are
+    // recombined into the single dealValue string the server already expects,
+    // so nothing downstream has to change.
+    function composeDealValue() {
+      const raw = (document.getElementById('dealValue').value || '').trim();
+      const unit = new FormData(dealForm).get('dealValueUnit') || '';
+      if (!raw) return '';
+      if (!unit || unit === 'Other') return raw;
+      return `${raw} ${unit}`;
+    }
+
     function buildPayload(calibrationText = '') {
       const form = new FormData(dealForm);
       return {
         requestType: calibrationText ? 'calibrated_read' : 'initial_read',
         dealName: form.get('dealName')?.trim() || '',
         companyName: form.get('companyName')?.trim() || '',
-        dealValue: form.get('dealValue')?.trim() || '',
+        dealValue: composeDealValue(),
         dealStage: form.get('dealStage') || '',
         dealStatus: form.get('dealStatus') || '',
+        lastBuyerAction: form.get('lastBuyerAction') || '',
         conversationDriver: form.get('conversationDriver') || '',
         primaryContactName: form.get('primaryContactName')?.trim() || '',
         primaryContactDesignation: form.get('primaryContactDesignation')?.trim() || '',
@@ -1401,7 +1428,7 @@
       const r = state.lastResponse;
       const companyName = document.getElementById('companyName').value.trim();
       const dealName = document.getElementById('dealName').value.trim();
-      const dealValue = document.getElementById('dealValue').value.trim();
+      const dealValue = composeDealValue();
       const band = r.confidenceBand || '';
 
       const headerParts = [companyName, dealName].filter(Boolean).join(' · ');
