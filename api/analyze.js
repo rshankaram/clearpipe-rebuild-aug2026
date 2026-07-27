@@ -439,7 +439,7 @@ export default async function handler(req, res) {
         // responses off mid-JSON, which extractJson cannot recover from. If
         // "Could not parse the analysis" recurs, check the Vercel function
         // log for this route -- it prints stop_reason and the raw text.
-        max_tokens: 4096,
+        max_tokens: 8000,
         // temperature intentionally omitted -- this model family rejects the
         // parameter outright (400 invalid_request_error), unlike older Claude
         // models where it was optional. Do not re-add without confirming the
