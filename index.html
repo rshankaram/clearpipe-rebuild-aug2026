@@ -684,37 +684,69 @@
 
     .app-footer a:hover { color: var(--muted); }
 
-    /* Optional, non-blocking feedback invite next to Download -- sits at the
-       one moment the rep knows whether the read was any good, never gates
-       the download itself. */
-    .feedback-nudge {
-      margin-top: 16px;
-      padding-top: 16px;
+    /* Tester feedback form. Replaces the earlier two-link nudge, which asked
+       for a reaction without giving it a shape. Sits inside .shell, so the
+       print rule above (.shell > *:not(#printSummary)) already keeps it out
+       of the saved PDF -- no separate print handling is needed here. */
+    .feedback-form {
+      margin-top: 20px;
+      padding-top: 18px;
       border-top: 1px solid rgba(38,35,31,0.08);
     }
 
-    .feedback-nudge p {
-      margin: 0 0 8px;
+    .feedback-form h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .feedback-intro {
+      margin: 0 0 16px;
       font-size: 13.5px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
-    .feedback-links {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
+    .feedback-form .field { margin-bottom: 16px; }
+    .feedback-form .field label { font-size: 14px; }
+    .feedback-form .textarea { min-height: 76px; font-size: 14.5px; }
+    .feedback-form .tile { padding: 11px 10px; font-size: 14px; }
+    .feedback-form .footer-tools { margin-top: 16px; }
+
+    /* Two-option variant of .tile-group. Declared after it, so the narrower
+       track count wins on equal specificity. */
+    .tile-group-2 { grid-template-columns: repeat(2, 1fr); }
+
+    .feedback-optional { font-weight: 500; color: var(--faint); }
+
+    .feedback-privacy {
+      margin-top: 4px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
-    .feedback-links a {
-      font-size: 13.5px;
-      font-weight: 700;
+    .feedback-form .microcopy a,
+    .feedback-sent a {
       color: var(--primary);
+      font-weight: 700;
       text-decoration: underline;
       text-underline-offset: 2px;
     }
 
-    .feedback-links a:hover { color: var(--primary-hover); }
+    .feedback-sent {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+      font-size: 14px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -992,12 +1024,59 @@
           <button type="button" class="button-secondary" id="downloadButton">Download PDF</button>
         </div>
 
-        <div class="feedback-nudge" id="feedbackNudge">
-          <p>Enjoyed this? A quick note on what worked (or didn't) would mean a lot.</p>
-          <div class="feedback-links">
-            <a href="https://wa.me/918095200265?text=Just%20tested%20ClearPipe%20%E2%80%94%20here's%20my%20feedback%3A%20" target="_blank" rel="noopener">WhatsApp</a>
-            <a href="mailto:shankar@growthstratex.com?subject=ClearPipe%20feedback">Email</a>
+        <form class="feedback-form" id="feedbackForm" novalidate>
+          <h3>Four questions, about ninety seconds</h3>
+          <p class="feedback-intro">You are one of a small group testing this. What you write here decides what changes next.</p>
+
+          <div class="field">
+            <label id="fbRevealLabel">Did ClearPipe reveal anything you had not considered before?</label>
+            <div class="tile-group tile-group-2" role="radiogroup" aria-labelledby="fbRevealLabel">
+              <label class="tile"><input class="tile-input" type="radio" name="fbReveal" value="Yes"><span>Yes</span></label>
+              <label class="tile"><input class="tile-input" type="radio" name="fbReveal" value="No"><span>No</span></label>
+            </div>
+            <div class="followup" id="fbRevealFollowup">
+              <label for="fbNew">What exactly was new or useful?</label>
+              <textarea class="textarea" id="fbNew" name="fbNew" placeholder="The specific point, if you can put your finger on it."></textarea>
+            </div>
           </div>
+
+          <div class="field">
+            <label id="fbChangeLabel">Did this change what you would do next on the deal?</label>
+            <div class="tile-group" role="radiogroup" aria-labelledby="fbChangeLabel">
+              <label class="tile"><input class="tile-input" type="radio" name="fbChange" value="Yes"><span>Yes</span></label>
+              <label class="tile"><input class="tile-input" type="radio" name="fbChange" value="No"><span>No</span></label>
+              <label class="tile"><input class="tile-input" type="radio" name="fbChange" value="Partly"><span>Partly</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fbWrong">What felt wrong, generic, or unhelpful?</label>
+            <textarea class="textarea" id="fbWrong" name="fbWrong" placeholder="Be blunt. This is the most useful of the four answers."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="fbName">Your name <span class="feedback-optional">(optional)</span></label>
+            <input class="input" type="text" id="fbName" name="fbName" placeholder="So I know who to come back to.">
+          </div>
+
+          <div class="feedback-privacy">
+            Only your answers above are submitted. Nothing you entered about your deal leaves this page.
+          </div>
+
+          <div class="footer-tools">
+            <button type="submit" class="button" id="feedbackSubmit">Send feedback</button>
+          </div>
+
+          <div class="microcopy">
+            Prefer WhatsApp? <a href="https://wa.me/918095200265?text=ClearPipe%20feedback%3A%20" target="_blank" rel="noopener">Screenshot your answers and send them across instead.</a>
+          </div>
+
+          <div class="status" id="feedbackStatus" aria-live="polite"></div>
+        </form>
+
+        <div class="feedback-sent hidden" id="feedbackSent" role="status">
+          Thank you — that has come through. If you think of anything later,
+          <a href="https://wa.me/918095200265" target="_blank" rel="noopener">WhatsApp</a> is open.
         </div>
 
         <div class="status" id="statusMessage" aria-live="polite"></div>
@@ -1512,6 +1591,84 @@
       document.title = `ClearPipe - ${document.getElementById('companyName').value || 'Deal Read'}`;
       window.print();
       setTimeout(() => { document.title = originalTitle; }, 300);
+    });
+
+    /* ---- Tester feedback -----------------------------------------------
+       PRIVACY INVARIANT. The body below is constructed field by field from
+       the five feedback inputs and nothing else. It is never derived from
+       dealForm, state.lastPayload or state.lastResponse, and nothing is ever
+       spread into it. That is what makes the line shown to the tester --
+       "nothing you entered about your deal leaves this page" -- literally
+       true rather than merely intended. If a field is added here, add it by
+       name. Do not widen the source.
+    --------------------------------------------------------------------- */
+    const FEEDBACK_ENDPOINT = 'https://formspree.io/f/mrenjejb';
+
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackSent = document.getElementById('feedbackSent');
+    const feedbackStatus = document.getElementById('feedbackStatus');
+    const feedbackSubmit = document.getElementById('feedbackSubmit');
+    const fbRevealFollowup = document.getElementById('fbRevealFollowup');
+
+    // Q2 appears only on a Yes to Q1 -- same conditional pattern as the
+    // pricing and seniority boxes in Step 2.
+    wireFollowup('fbReveal', 'fbRevealFollowup');
+
+    function feedbackChoice(name) {
+      const chosen = document.querySelector(`input[name="${name}"]:checked`);
+      return chosen ? chosen.value : '';
+    }
+
+    feedbackForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const revealed = feedbackChoice('fbReveal');
+      const changed = feedbackChoice('fbChange');
+
+      if (!revealed || !changed) {
+        feedbackStatus.style.color = 'var(--error)';
+        feedbackStatus.textContent = 'Answer the two Yes/No questions and it will send.';
+        return;
+      }
+
+      const body = {
+        testerName: document.getElementById('fbName').value.trim() || 'Not given',
+        revealedSomethingNew: revealed,
+        whatWasNewOrUseful: document.getElementById('fbNew').value.trim(),
+        changedWhatIdDoNext: changed,
+        whatFeltWrongOrGeneric: document.getElementById('fbWrong').value.trim()
+      };
+
+      feedbackSubmit.disabled = true;
+      feedbackStatus.style.color = 'var(--muted)';
+      feedbackStatus.textContent = 'Sending...';
+
+      try {
+        const response = await fetch(FEEDBACK_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error('Feedback endpoint returned ' + response.status);
+        feedbackForm.classList.add('hidden');
+        feedbackSent.classList.remove('hidden');
+      } catch (error) {
+        console.error('Feedback submission failed:', error);
+        feedbackSubmit.disabled = false;
+        feedbackStatus.style.color = 'var(--error)';
+        feedbackStatus.textContent = 'That did not send. Screenshot your answers and WhatsApp them instead - the link is just above.';
+      }
+    });
+
+    // Starting over should clear the feedback block too. Attached as its own
+    // listener so this whole section stays self-contained.
+    document.getElementById('resetButton').addEventListener('click', () => {
+      feedbackForm.reset();
+      fbRevealFollowup.classList.remove('active');
+      feedbackForm.classList.remove('hidden');
+      feedbackSent.classList.add('hidden');
+      feedbackStatus.textContent = '';
+      feedbackSubmit.disabled = false;
     });
   </script>
 </body>
